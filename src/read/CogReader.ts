@@ -4,7 +4,10 @@ import QuickLRU from 'quick-lru';
 import {Bbox, CogMetadata, ImageMetadata, TileIndex, TileJSON, TypedArray} from '../types';
 import {
   mercatorBboxToGeographicBbox,
+  utmBboxToGeographicBbox,
   tileIndexToMercatorBbox,
+  // tileIndexToUTMBbox,
+  mercatorBboxToUTMBbox,
   zoomFromResolution
 } from './math';
 
@@ -42,7 +45,15 @@ const CogReader = (url: string) => {
       const gdalMetadata = firstImage.getGDALMetadata(0); // Metadata for first image and first sample
       const fileDirectory = firstImage.fileDirectory;
       const artist = firstImage.fileDirectory?.Artist;
-      const bbox = mercatorBboxToGeographicBbox(firstImage.getBoundingBox() as Bbox);
+      const geoKeys = firstImage.geoKeys?.GTCitationGeoKey;
+      let bbox;
+      if (geoKeys && typeof geoKeys === 'string' && geoKeys.includes("UTM")){
+        bbox = utmBboxToGeographicBbox(firstImage.getBoundingBox() as Bbox);
+      } else if (geoKeys && typeof geoKeys === 'string' && geoKeys.includes("Pseudo-Mercator")){
+        bbox = mercatorBboxToGeographicBbox(firstImage.getBoundingBox() as Bbox);
+      } else {
+        bbox = mercatorBboxToGeographicBbox(firstImage.getBoundingBox() as Bbox);
+      }
 
       const imagesMetadata: Array<ImageMetadata> = [];
       const imageCount = await tiff.getImageCount();
@@ -68,7 +79,6 @@ const CogReader = (url: string) => {
 
       // @ts-expect-error metadata will be wrapped with a Promise
       metadataCache.set(url, metadata);
-
       return metadata;
     }
   };
@@ -102,8 +112,13 @@ const CogReader = (url: string) => {
       // Int and Uint arrays will be filled with zeroes.
       const fillValue = noData === undefined || isNaN(noData) ? Infinity : noData;
 
+      let bbox = tileIndexToMercatorBbox({x, y, z});
+      if (x < 1000){
+        bbox = mercatorBboxToUTMBbox(bbox);
+      }
+
       const tile = tiff.readRasters({
-        bbox: tileIndexToMercatorBbox({x, y, z}),
+        bbox: bbox,
         width: tileSize,
         height: tileSize,
         interleave: false,
@@ -117,7 +132,8 @@ const CogReader = (url: string) => {
     }
   };
 
-  return {getTilejson, getMetadata, getRawTile};
+  const data = {getTilejson, getMetadata, getRawTile};
+  return data;
 };
 
 export default CogReader;

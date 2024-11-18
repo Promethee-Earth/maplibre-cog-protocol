@@ -9,6 +9,35 @@ import { TileJSON } from './types';
 
 export const TILE_SIZE = 256;
 
+
+// const downloadBitmapImage = async (imageBitmap:ImageBitmap) => {
+//   // Créer un Canvas pour dessiner l'ImageBitmap
+//   const canvas = document.createElement("canvas");
+//   const context = canvas.getContext("2d");
+
+//   if (context){
+
+//   // Définir les dimensions du canvas
+//   canvas.width = imageBitmap.width;
+//   canvas.height = imageBitmap.height;
+
+//   // Dessiner l'ImageBitmap sur le canvas
+//   context.drawImage(imageBitmap, 0, 0);
+
+//   // Convertir le canvas en une URL de données (Blob URL)
+//   canvas.toBlob((blob) => {
+//     if (blob) {
+//       // Créer un lien de téléchargement
+//       const link = document.createElement("a");
+//       link.href = URL.createObjectURL(blob);
+//       link.download = "tile_image.png"; // Nom du fichier à télécharger
+//       link.click(); // Simuler un clic pour démarrer le téléchargement
+//     }
+//   }, "image/png");
+//   }
+
+// };
+
 const renderTile = async (url: string) => {
   // Read URL parameters
   const re = new RegExp(/cog:\/\/(.+)\/(\d+)\/(\d+)\/(\d+)/);
@@ -57,34 +86,35 @@ const renderTile = async (url: string) => {
       } else {
         [colorScheme, minStr, maxStr, modifiers] = colorParams.split(',');
       }
-
       const min = parseFloat(minStr),
         max = parseFloat(maxStr),
         isReverse = modifiers?.includes('-') || false,
         isContinuous = modifiers?.includes('c') || false;
-
       rgba = renderColor(rawTile, {...metadata, colorScale: { colorScheme, customColors, min, max, isReverse, isContinuous}});
     }
   } else {
     rgba = renderPhoto(rawTile, metadata);
   }
 
-  return await createImageBitmap(
+
+  const image = await createImageBitmap(
     new ImageData(
       rgba,
       TILE_SIZE,
       TILE_SIZE
     )
   );
+  return image;
 };
 
 
 const cogProtocol = async (params: RequestParameters): Promise<GetResourceResponse<TileJSON | ImageBitmap>> => {
   if (params.type == 'json') {
     const cogUrl = params.url.replace('cog://', '').split('#')[0];
-    return {
+    const ret = {
       data: await CogReader(cogUrl).getTilejson(params.url)
-    };
+    }
+    return ret;
   } else if (params.type == 'image') {
     return {
       data: await renderTile(params.url)
