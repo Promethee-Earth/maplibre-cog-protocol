@@ -1,13 +1,7 @@
 {
   "name": "@promethee-earth/maplibre-cog-protocol",
-  "version": "0.3.2",
-  "private": false,
+  "version": "0.3.4",
   "description": "Custom protocol to load Cloud Optimized GeoTIFFs (COG) in Maplibre GL JS",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Promethee-Earth/maplibre-cog-protocol.git"
-  },
-  "homepage": "https://github.com/Promethee-Earth/maplibre-cog-protocol",
   "scripts": {
     "watch:src": "rimraf dist && rollup -c rollup.config.mjs --environment DEV --watch",
     "watch:examples": "five-server",
@@ -21,7 +15,6 @@
   "files": [
     "dist"
   ],
-  "type": "module",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,8 +30,8 @@
     "@types/jest": "^29.5.12",
     "@types/mapbox__sphericalmercator": "^1.2.3",
     "@types/proj4": "^2.5.5",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.16.1",
     "concurrently": "^8.2.2",
     "d3-scale": "^4.0.2",
     "eslint": "^8.57.0",
@@ -53,7 +46,7 @@
     "quick-lru": "^6.1.2",
     "rimraf": "^6.0.1",
     "rollup": "^4.18.1",
-    "ts-jest": "^29.2.5",
+    "ts-jest": "^29.2.2",
     "tslib": "^2.6.3",
     "typescript": "^5.5.3",
     "typescript-eslint": "^7.16.1"
